@@ -1,7 +1,7 @@
 <h1 align="center">HackerKitNext</h1>
 <p align="center">
   <b>现代化生活·学习·工作的全能工具箱</b> <br>
-  <sub>HackerKit 的 Flutter 进化实现，功能全面，界面精美，体验优雅。</sub>
+  <sub>HackerKit 的 Flutter 实现，功能全面，界面精美，体验优雅。</sub>
 </p>
 
 <p align="center">
@@ -81,23 +81,25 @@ flutter run
 
 
 ## 👥 贡献者
+<p align="left">
+  <a href="https://github.com/KeluIsAfkeru/HackerKitNext/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=KeluIsAfkeru/HackerKit" alt="Contributors" />
+  </a>
+</p>
+<!-- contributor-avatars end -->
 
 <p align="center">
-  <a href="https://github.com/KeluIsAfkeru/HackerKitNext/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=KeluIsAfkeru/HackerKitNext" alt="Contributors"/>
+  <a href="https://github.com/KeluIsAfkeru/HackerKitNext/pulls" style="display:inline-block; margin-right:8px;">
+    <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/KeluIsAfkeru/HackerKitNext?style=for-the-badge" />
+  </a>
+  <a href="https://github.com/KeluIsAfkeru/HackerKitNext/issues" style="display:inline-block; margin-right:8px;">
+    <img alt="GitHub issues" src="https://img.shields.io/github/issues/KeluIsAfkeru/HackerKitNext?style=for-the-badge" />
+  </a>
+  <a href="https://github.com/KeluIsAfkeru/HackerKitNext/graphs/contributors" style="display:inline-block;">
+    <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/KeluIsAfkeru/HackerKitNext?style=for-the-badge" />
   </a>
 </p>
-<p align="center">
-  <a href="https://github.com/KeluIsAfkeru/HackerKitNext/graphs/contributors">
-    <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/KeluIsAfkeru/HackerKitNext?style=for-the-badge">
-  </a>
-  <a href="https://github.com/KeluIsAfkeru/HackerKitNext/issues">
-    <img alt="GitHub issues" src="https://img.shields.io/github/issues/KeluIsAfkeru/HackerKitNext?style=for-the-badge">
-  </a>
-  <a href="https://github.com/KeluIsAfkeru/HackerKitNext/pulls">
-    <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/KeluIsAfkeru/HackerKitNext?style=for-the-badge">
-  </a>
-</p>
+
 
 ---
 

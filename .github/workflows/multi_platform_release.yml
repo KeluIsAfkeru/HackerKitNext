@@ -5,6 +5,9 @@ on:
     types: [published]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
@@ -51,10 +54,13 @@ jobs:
         run: flutter pub get
       - name: Build Windows Executable
         run: flutter build windows --release
+      - name: Package Windows App
+        run: |
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath build/windows/windows-release.zip
       - name: Upload Windows Build to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/windows/x64/runner/Release/*.exe
+          files: build/windows/windows-release.zip
 
   build-linux:
     runs-on: ubuntu-latest

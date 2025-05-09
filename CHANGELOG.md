@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.0.0...v1.0.1) (2025-05-09)
+
+
+### Bug Fixes
+
+* correct artifact packaging in release workflow ([652c0ac](https://github.com/KeluIsAfkeru/HackerKitNext/commit/652c0acdcd6c392de0d31091537e8b9183ee9ab4))
+
 ## 1.0.0 (2025-05-09)
 
 

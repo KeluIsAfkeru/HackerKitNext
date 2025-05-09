@@ -1,0 +1,31 @@
+name: hackerkit_next
+description: "HackerKitNext is the Flutter implementation of the modern and powerful utility suite, HackerKit"
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.0-278.2.beta
+
+dependencies:
+  flutter:
+    sdk: flutter
+  go_router: ^13.1.0
+  provider: ^6.1.5
+  cupertino_icons: ^1.0.8
+  flutter_animate: ^4.5.0
+  shared_preferences: ^2.2.2
+  material_segmented_control: ^5.0.1
+  flutter_riverpod: ^2.6.1
+#  easy_sidemenu: ^0.6.1
+#  flutter_animate: ^4.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

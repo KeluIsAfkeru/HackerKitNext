@@ -26,34 +26,20 @@
 
 ## 🌟 功能概览
 
-<div align="center">
-  <table>
-    <tr>
-      <td width="45%" valign="top">
-        <h4 align="center">✨ 已实现</h4>
-        <ul>
-          <li>极简优雅的 UI 设计</li>
-	  <li>精致现代化的侧边栏</li>
-          <li>完善的设置页面</li>
-          <li>独立的关于页面</li>
-          <li>亮/暗色主题自由切换</li>
-        </ul>
-      </td>
-      <td width="10%"></td>
-      <td width="45%" valign="top">
-        <h4 align="center">🚧 待实现</h4>
-        <ul>
-          <li>Protobuf 编码解码</li>
-          <li>JWT 编码解码</li>
-          <li>进制转换工具</li>
-          <li>主流编码解码（如 Base64/URL 等）</li>
-          <li>QQ FakeFile 生成</li>
-          <li>卡片签名快捷生成</li>
-        </ul>
-      </td>
-    </tr>
-  </table>
-</div>
+### ✨ 已实现
+- 极简优雅的 UI 设计
+- 精致现代化的侧边栏
+- 完善的设置页面
+- 独立的关于页面
+- 亮/暗色主题自由切换
+
+### 🚧 待实现
+- Protobuf 编码解码
+- JWT 编码解码
+- 进制转换工具
+- 主流编码解码（如 Base64/URL 等）
+- QQ FakeFile 生成
+- 卡片签名快捷生成
 
 ---
 
@@ -65,20 +51,35 @@
 - 智能状态持久化，使用体验极致流畅
 - 定期维护，持续进化，追求极致
 
----
+## 📋 环境要求
+
+- **Flutter SDK**：建议使用 Flutter 3.22 及以上版本（包括 beta 和 dev 分支）
+- **Dart SDK**：Flutter 3.22 beta 或更高dev分支
+- **开发环境**：支持 Windows、macOS、Linux
+- **IDE（可选）**：推荐使用 VS Code 或 Android Studio，安装 Flutter 和 Dart 插件
+- **设备/模拟器**：支持 Android、iOS 设备或模拟器，也支持 Web 和 Desktop 平台
 
 ## 📦 快速开始
 
 ```bash
+# 克隆项目代码到本地
 git clone https://github.com/KeluIsAfkeru/HackerKitNext.git
+
+# 进入项目目录
 cd HackerKitNext
+
+# 安装依赖包
 flutter pub get
+
+# 运行项目，默认连接的设备（模拟器或真机）上启动
 flutter run
+
+# 如果想构建 APK 安装包
+flutter build apk --release
+
+# 构建 iOS 应用（需 macOS 和 Xcode 环境）
+flutter build ios --release
 ```
-
----
-
-
 
 ## 👥 贡献者
 <p align="left">
@@ -101,7 +102,6 @@ flutter run
 </p>
 
 
----
 
 ## 📈 项目活跃度
 

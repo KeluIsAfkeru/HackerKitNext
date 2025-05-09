@@ -51,10 +51,14 @@ jobs:
         run: flutter pub get
       - name: Build Windows Executable
         run: flutter build windows --release
+      - name: Create Windows ZIP Archive
+        run: |
+          cd build/windows/x64/runner/Release
+          Compress-Archive -Path * -DestinationPath windows-release.zip
       - name: Upload Windows Build to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/windows/x64/runner/Release/*.exe
+          files: build/windows/x64/runner/Release/windows-release.zip
 
   build-linux:
     runs-on: ubuntu-latest
@@ -70,7 +74,11 @@ jobs:
         run: flutter pub get
       - name: Build Linux Executable
         run: flutter build linux --release
+      - name: Create Linux tar.gz Archive
+        run: |
+          cd build/linux/x64/release/bundle
+          tar -czvf linux-release.tar.gz *
       - name: Upload Linux Build to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/linux/x64/release/bundle/**
+          files: build/linux/x64/release/bundle/linux-release.tar.gz

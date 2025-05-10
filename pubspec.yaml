@@ -11,15 +11,25 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  dio: ^5.8.0
+  http: ^1.4.0
   go_router: ^13.1.0
   provider: ^6.1.5
+  path_provider: ^2.1.5
+  open_file: ^3.5.10
+  url_launcher: ^6.3.1
   cupertino_icons: ^1.0.8
   flutter_animate: ^4.5.0
   shared_preferences: ^2.2.2
   material_segmented_control: ^5.0.1
   flutter_riverpod: ^2.6.1
-#  easy_sidemenu: ^0.6.1
-#  flutter_animate: ^4.5.0
+  package_info_plus: ^8.3.0
+  pub_semver: ^2.2.0
+  flutter_markdown: ^0.7.7
+  open_file_manager: ^2.0.1
+
+  flutter_app_installer:
+    path: ./plugins/flutter_app_installer
 
 dev_dependencies:
   flutter_test:

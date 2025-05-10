@@ -5,6 +5,7 @@ import 'package:hackerkit_next/features/home/presentation/viewmodels/home_viewmo
 import 'package:hackerkit_next/presentation/widgets/modern_sidebar.dart';
 import 'package:hackerkit_next/presentation/widgets/more_menu_button.dart';
 import '../../../../core/constants/app_icons.dart';
+import '../../../../core/services/update_checker.dart';
 
 class HomePage extends StatefulWidget {
   final Widget child;
@@ -56,6 +57,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final viewModel = Provider.of<HomeViewModel>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _syncSidebarAnim(viewModel.isSidebarExpanded);
+
+      if (mounted) {
+        UpdateChecker.initialize(context);
+      }
     });
   }
 

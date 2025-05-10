@@ -67,7 +67,7 @@ class ModernSidebar extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'v1.0.0',
+                  AppConstants.appVersion,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant.withValues(alpha: (0.7 * 255).toDouble()),
                   ),
@@ -127,7 +127,7 @@ class ModernSidebar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppConstants.authorName,
+                  AppConstants.appAuthor,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

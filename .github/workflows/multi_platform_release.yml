@@ -6,8 +6,22 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-android:
+  extract-version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: get_version
+        run: |
+          VERSION=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+  build-android:
+    needs: extract-version
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.extract-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -31,16 +45,24 @@ jobs:
           fi
       - name: Build Split APKs
         run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64 --split-per-abi
+      - name: Rename APKs with version
+        run: |
+          mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/app/outputs/flutter-apk/HackerKit-v${VERSION}-armeabi-v7a-release.apk
+          mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/HackerKit-v${VERSION}-arm64-v8a-release.apk
+          mv build/app/outputs/flutter-apk/app-x86_64-release.apk build/app/outputs/flutter-apk/HackerKit-v${VERSION}-x86_64-release.apk
       - name: Upload Split APKs to Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/app/outputs/flutter-apk/HackerKit-v${{ env.VERSION }}-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/HackerKit-v${{ env.VERSION }}-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/HackerKit-v${{ env.VERSION }}-x86_64-release.apk
 
   build-windows:
+    needs: extract-version
     runs-on: windows-latest
+    env:
+      VERSION: ${{ needs.extract-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -51,17 +73,20 @@ jobs:
         run: flutter pub get
       - name: Build Windows Executable
         run: flutter build windows --release
-      - name: Create Windows ZIP Archive
+      - name: Create Windows ZIP Archive with version
         run: |
           cd build/windows/x64/runner/Release
-          Compress-Archive -Path * -DestinationPath windows-release.zip
+          Compress-Archive -Path * -DestinationPath HackerKit-v${env:VERSION}-windows-release.zip
       - name: Upload Windows Build to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/windows/x64/runner/Release/windows-release.zip
+          files: build/windows/x64/runner/Release/HackerKit-v${{ env.VERSION }}-windows-release.zip
 
   build-linux:
+    needs: extract-version
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.extract-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Linux build dependencies
@@ -74,11 +99,35 @@ jobs:
         run: flutter pub get
       - name: Build Linux Executable
         run: flutter build linux --release
-      - name: Create Linux tar.gz Archive
+      - name: Create Linux tar.gz Archive with version
         run: |
           cd build/linux/x64/release/bundle
-          tar -czvf linux-release.tar.gz *
+          tar -czvf HackerKit-v${VERSION}-linux-release.tar.gz *
       - name: Upload Linux Build to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/linux/x64/release/bundle/linux-release.tar.gz
+          files: build/linux/x64/release/bundle/HackerKit-v${{ env.VERSION }}-linux-release.tar.gz
+
+  build-macos:
+    needs: extract-version
+    runs-on: macos-latest
+    env:
+      VERSION: ${{ needs.extract-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'beta'
+          flutter-version: '3.32.0-0.3.pre'
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build MacOS Executable
+        run: flutter build macos --release
+      - name: Create MacOS ZIP Archive with version
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r HackerKit-v${VERSION}-macos-release.zip HackerKit.app
+      - name: Upload MacOS Build to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/macos/Build/Products/Release/HackerKit-v${{ env.VERSION }}-macos-release.zip

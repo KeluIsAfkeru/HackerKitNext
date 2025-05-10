@@ -76,7 +76,7 @@ class AboutSheet extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     Text(
-                      AppConstants.authorName,
+                      AppConstants.appAuthor,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.onSurface,

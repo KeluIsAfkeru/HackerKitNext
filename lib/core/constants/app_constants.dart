@@ -1,14 +1,13 @@
 import 'package:flutter/animation.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class AppConstants {
   //基本信息
   static const String appName = 'HackerKit';
-  static const String appVersion = '1.0.0';
+  static String appVersion = '1.0.0';
+  static String appBuildNumber = '0';
   static const String appAuthor = 'Afkeru';
   static const String appDescription = 'HackerKit是一款实现了跨平台、高颜值、实用的系列工具集合，无论你是开发者、技术爱好者，还是日常需要高效工具的用户，这里都能为你提供各种实用工具，一站式解决你的需求';
-
-  //用户信息
-  static const String authorName = 'Afkeru';
   static const String authorTitle = '一只独自追求明星的狼~';
 
   //UI配置
@@ -20,4 +19,16 @@ class AppConstants {
   //动画配置
   static const Duration animationDuration = Duration(milliseconds: 300);
   static const Curve animationCurve = Curves.easeInOutCubicEmphasized;
+
+  //github库
+  static const String repoOwner = 'KeluIsAfkeru';
+  static const String repoName = 'HackerKitNext';
+  static const String apiReleaseUrl = 'https://api.github.com/repos/$repoOwner/$repoName/releases/latest';
+
+  //取当前应用版本号和构建号
+  static Future<void> initializeAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    appVersion = packageInfo.version;
+    appBuildNumber = packageInfo.buildNumber;
+  }
 }

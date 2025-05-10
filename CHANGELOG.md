@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.0.1...v1.0.2) (2025-05-10)
+
+
+### Bug Fixes
+
+* add remote repository update check and local update ([3568a8a](https://github.com/KeluIsAfkeru/HackerKitNext/commit/3568a8a2c4d437b45b3ddadf03d98b624bb7a6cc))
+
 ## [1.0.1](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.0.0...v1.0.1) (2025-05-09)
 
 

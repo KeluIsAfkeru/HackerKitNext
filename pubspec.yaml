@@ -27,6 +27,7 @@ dependencies:
   pub_semver: ^2.2.0
   flutter_markdown: ^0.7.7
   open_file_manager: ^2.0.1
+  fluttertoast: ^8.2.12
 
   flutter_app_installer:
     path: ./plugins/flutter_app_installer

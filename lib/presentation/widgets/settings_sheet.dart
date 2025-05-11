@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/services/toast_service.dart';
 import '../../core/theme/theme_mode_provider.dart';
 import '../../core/services/update_checker.dart'; 
 
@@ -108,12 +109,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
                         await UpdateChecker.checkForUpdatesManually(context);
                       } catch (e) {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('检查更新失败: $e'),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
+                          ToastService.showErrorToast('检查更新失败: $e');
                         }
                       } finally {
                         if (mounted) {

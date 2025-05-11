@@ -255,9 +255,10 @@ class ModernSidebar extends StatelessWidget {
             }
 
             //在移动设备上自动折叠侧边栏
-            if (MediaQuery.of(context).size.width < 1200) {
+            /*if (MediaQuery.of(context).size.width < 1200) {
               viewModel.toggleSidebar();
-            }
+            }*/
+            viewModel.toggleSidebar(); //所有设备都会折叠
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(

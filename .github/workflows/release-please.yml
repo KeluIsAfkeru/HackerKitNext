@@ -13,8 +13,50 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
     steps:
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
           release-type: dart
           token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+  
+  sync-to-gitee:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.release-please.outputs.version }}
+      TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Release Assets
+        uses: robinraju/release-downloader@v1.8
+        with:
+          tag: ${{ env.TAG_NAME }}
+          fileName: "*.zip,*.apk,*.tar.gz"
+          out-file-path: "release-assets"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Sync Release to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+          GITEE_OWNER: "Afkeru"
+          GITEE_REPO: "hacker-kit-next_-release"
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python .github/scripts/sync_release_to_gitee.py

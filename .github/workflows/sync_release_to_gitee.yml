@@ -1,0 +1,179 @@
+name: Sync Release to Gitee
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync-to-gitee:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get latest GitHub release
+        id: github_release
+        run: |
+          RELEASE=$(curl -s -H "Authorization: token ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}" \
+                  "https://api.github.com/repos/${{ github.repository }}/releases/latest")
+          
+          if [[ $(echo "$RELEASE" | jq -r 'has("message")') == "true" ]]; then
+            echo "Error fetching GitHub release: $(echo "$RELEASE" | jq -r '.message')"
+            exit 1
+          fi
+          
+          echo "$RELEASE" > github_release.json
+          echo "TAG_NAME=$(echo "$RELEASE" | jq -r '.tag_name')" >> $GITHUB_ENV
+          echo "RELEASE_NAME=$(echo "$RELEASE" | jq -r '.name')" >> $GITHUB_ENV
+          echo "Found release: ${{ env.RELEASE_NAME }} (${{ env.TAG_NAME }})"
+          
+          echo "$RELEASE" | jq -r '.body' > release_body.txt
+
+      - name: Check if release exists on Gitee
+        id: check_gitee_release
+        run: |
+          RESPONSE_CODE=$(curl -s -o response.txt -w "%{http_code}" \
+            "https://gitee.com/api/v5/repos/Afkeru/HackerKitNext_Release/releases/tags/${{ env.TAG_NAME }}?access_token=${{ secrets.GITEE_TOKEN }}")
+          
+          echo "HTTP status code: $RESPONSE_CODE"
+          
+          CONTENT=$(cat response.txt)
+          echo "API Response content: $CONTENT"
+          
+          if [[ "$RESPONSE_CODE" == "200" && ("$CONTENT" == "\"no content\"" || -z "$CONTENT" || "$CONTENT" == "null") ]]; then
+            echo "API returned 200 but with no valid content, release does not exist"
+            echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
+          elif [[ "$RESPONSE_CODE" == "200" && $(echo "$CONTENT" | jq -e '.id' 2>/dev/null) ]]; then
+            echo "Release with tag '${{ env.TAG_NAME }}' exists on Gitee."
+            echo "RELEASE_EXISTS=true" >> $GITHUB_ENV
+            GITEE_RELEASE_ID=$(echo "$CONTENT" | jq -r '.id')
+            echo "Using existing release ID: $GITEE_RELEASE_ID"
+            echo "GITEE_RELEASE_ID=$GITEE_RELEASE_ID" >> $GITHUB_ENV
+          else
+            echo "Release with tag '${{ env.TAG_NAME }}' does not exist on Gitee, will create new one."
+            echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create release on Gitee
+        id: create_gitee_release
+        if: env.RELEASE_EXISTS == 'false'
+        run: |
+          RELEASE_BODY=$(cat release_body.txt)
+          PAYLOAD=$(jq -n \
+            --arg token "${{ secrets.GITEE_TOKEN }}" \
+            --arg tag "${{ env.TAG_NAME }}" \
+            --arg name "${{ env.RELEASE_NAME }}" \
+            --argjson body "$(echo "$RELEASE_BODY" | jq -Rs .)" \
+            '{
+              access_token: $token,
+              tag_name: $tag,
+              name: $name,
+              body: ($body | fromjson),
+              prerelease: false,
+              target_commitish: "master"
+            }')
+          
+          RESPONSE=$(curl -s -X POST \
+            "https://gitee.com/api/v5/repos/Afkeru/HackerKitNext_Release/releases" \
+            -H "Content-Type: application/json;charset=UTF-8" \
+            -d "$PAYLOAD")
+          
+          echo "Create release response: $RESPONSE"
+          
+          if [[ $(echo "$RESPONSE" | jq -r 'has("message")') == "true" ]]; then
+            echo "Error creating Gitee release: $(echo "$RESPONSE" | jq -r '.message')"
+            exit 1
+          fi
+          
+          GITEE_RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id')
+          if [[ -z "$GITEE_RELEASE_ID" || "$GITEE_RELEASE_ID" == "null" ]]; then
+            echo "Failed to get Gitee release ID. Response: $RESPONSE"
+            exit 1
+          fi
+          
+          echo "Successfully created Gitee release with ID: $GITEE_RELEASE_ID"
+          echo "GITEE_RELEASE_ID=$GITEE_RELEASE_ID" >> $GITHUB_ENV
+
+      - name: Download and upload assets
+        run: |
+          if [[ -z "$GITEE_RELEASE_ID" ]]; then
+            echo "Error: GITEE_RELEASE_ID is not set. Cannot proceed with asset upload."
+            exit 1
+          fi
+          
+          echo "Using Gitee Release ID: $GITEE_RELEASE_ID"
+          mkdir -p assets
+          ASSETS_COUNT=$(jq '.assets | length' github_release.json)
+          echo "Processing $ASSETS_COUNT assets"
+          
+          for (( i=0; i<$ASSETS_COUNT; i++ ))
+          do
+            ASSET_NAME=$(jq -r ".assets[$i].name" github_release.json)
+            ASSET_URL=$(jq -r ".assets[$i].browser_download_url" github_release.json)
+          
+            echo "Downloading asset: $ASSET_NAME from $ASSET_URL"
+            curl -L -o "assets/$ASSET_NAME" \
+              -H "Authorization: token ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}" \
+              -H "Accept: application/octet-stream" \
+              "$ASSET_URL"
+          
+            if [ $? -ne 0 ]; then
+              echo "Failed to download asset: $ASSET_NAME"
+              continue
+            fi
+          
+            echo "Uploading asset to Gitee: $ASSET_NAME"
+            UPLOAD_RESPONSE=$(curl -s -X POST \
+              "https://gitee.com/api/v5/repos/Afkeru/HackerKitNext_Release/releases/$GITEE_RELEASE_ID/attach_files" \
+              -F "access_token=${{ secrets.GITEE_TOKEN }}" \
+              -F "file=@assets/$ASSET_NAME")
+          
+            if [[ $(echo "$UPLOAD_RESPONSE" | grep -c "<!DOCTYPE html>") -gt 0 ]]; then
+              echo "Error: Received HTML response instead of JSON. Upload likely failed."
+              echo "Full response:"
+              echo "$UPLOAD_RESPONSE"
+          
+              if [[ $i -eq 0 ]]; then
+                echo "First upload failed, attempting to recreate release..."
+          
+                RELEASE_BODY=$(cat release_body.txt)
+                PAYLOAD=$(jq -n \
+                  --arg token "${{ secrets.GITEE_TOKEN }}" \
+                  --arg tag "${{ env.TAG_NAME }}" \
+                  --arg name "${{ env.RELEASE_NAME }}" \
+                  --argjson body "$(echo "$RELEASE_BODY" | jq -Rs .)" \
+                  '{
+                    access_token: $token,
+                    tag_name: $tag,
+                    name: $name, 
+                    body: ($body | fromjson),
+                    prerelease: false,
+                    target_commitish: "master"
+                  }')
+          
+                RESPONSE=$(curl -s -X POST \
+                  "https://gitee.com/api/v5/repos/Afkeru/HackerKitNext_Release/releases" \
+                  -H "Content-Type: application/json;charset=UTF-8" \
+                  -d "$PAYLOAD")
+          
+                NEW_RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id')
+                if [[ -n "$NEW_RELEASE_ID" && "$NEW_RELEASE_ID" != "null" ]]; then
+                  echo "Successfully recreated release with ID: $NEW_RELEASE_ID"
+                  GITEE_RELEASE_ID=$NEW_RELEASE_ID
+          
+                  UPLOAD_RETRY=$(curl -s -X POST \
+                    "https://gitee.com/api/v5/repos/Afkeru/HackerKitNext_Release/releases/$GITEE_RELEASE_ID/attach_files" \
+                    -F "access_token=${{ secrets.GITEE_TOKEN }}" \
+                    -F "file=@assets/$ASSET_NAME")
+          
+                  echo "Retry upload response: $UPLOAD_RETRY"
+                else
+                  echo "Failed to recreate release. Response: $RESPONSE"
+                fi
+              fi
+            elif [[ $(echo "$UPLOAD_RESPONSE" | jq -r 'has("message")') == "true" ]]; then
+              echo "Error uploading asset: $(echo "$UPLOAD_RESPONSE" | jq -r '.message')"
+            else
+              echo "Successfully uploaded asset: $ASSET_NAME"
+              echo "Upload response: $UPLOAD_RESPONSE"
+            fi
+          done

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.0.2...v1.0.3) (2025-05-11)
+
+
+### Bug Fixes
+
+* 修复Mac构建问题和侧边栏折叠问题，现代化气泡框显示 ([25fa9d1](https://github.com/KeluIsAfkeru/HackerKitNext/commit/25fa9d1c3c1e05632ff54c1ae4e360c3cbde7106))
+
 ## [1.0.2](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.0.1...v1.0.2) (2025-05-10)
 
 

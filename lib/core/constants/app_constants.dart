@@ -20,15 +20,40 @@ class AppConstants {
   static const Duration animationDuration = Duration(milliseconds: 300);
   static const Curve animationCurve = Curves.easeInOutCubicEmphasized;
 
-  //github库
-  static const String repoOwner = 'KeluIsAfkeru';
-  static const String repoName = 'HackerKitNext';
-  static const String apiReleaseUrl = 'https://api.github.com/repos/$repoOwner/$repoName/releases/latest';
+  static bool hasProxy = false; // 是否存在系统带来，默认使用Gitee API，为true则使用GitHub
+  //GitHub仓库
+  static const String githubRepoOwner = 'KeluIsAfkeru';
+  static const String githubRepoName = 'HackerKitNext';
+  //Gitee仓库
+  static const String giteeRepoOwner = 'Afkeru';
+  static const String giteeRepoName = 'hacker-kit-next_-release';
 
   //取当前应用版本号和构建号
   static Future<void> initializeAppVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
     appVersion = packageInfo.version;
     appBuildNumber = packageInfo.buildNumber;
+  }
+
+  //动态获取APIURL的getter
+  static String get apiReleasesUrl {
+    if (hasProxy) {
+      //GitHub API
+      return 'https://api.github.com/repos/$githubRepoOwner/$githubRepoName/releases';
+    } else {
+      //Gitee API
+      return 'https://gitee.com/api/v5/repos/$giteeRepoOwner/$giteeRepoName/releases';
+    }
+  }
+
+  //获取最新版本的URL
+  static String get latestReleaseUrl {
+    if (hasProxy) {
+      //GitHub提供/latest端点
+      return '$apiReleasesUrl/latest';
+    } else {
+      //Gitee需要获取列表并取第一个
+      return '$apiReleasesUrl?page=1&per_page=1&direction=desc';
+    }
   }
 }

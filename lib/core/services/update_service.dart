@@ -15,44 +15,95 @@ class UpdateService {
   //检查更新
   static Future<Map<String, dynamic>?> checkForUpdates() async {
     try {
-      final currentVersion = Version.parse(AppConstants.appVersion);
+      final currentVersionString = AppConstants.appVersion;
+      debugPrint('应用当前版本: $currentVersionString');
 
-      //获取最新版本信息
-      final response = await http.get(Uri.parse(AppConstants.apiReleaseUrl));
-      if (response.statusCode != 200) {
+      Version? currentVersion;
+      try {
+        currentVersion = Version.parse(currentVersionString);
+      } catch (e) {
+        debugPrint('当前版本号解析错误: $e');
         return null;
       }
 
-      final releaseData = json.decode(response.body);
+      //根据hasProxy使用不同的API端点
+      final response = await http.get(
+        Uri.parse(AppConstants.latestReleaseUrl),
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
+      );
+
+      debugPrint('API响应状态码: ${response.statusCode}');
+
+      if (response.statusCode != 200) {
+        debugPrint('获取releases失败: ${response.statusCode}');
+        return null;
+      }
+
+      //根据不同API解析响应数据
+      dynamic releaseData;
+      if (AppConstants.hasProxy) {
+        //GitHub API返回单个release对象
+        releaseData = json.decode(response.body);
+      } else {
+        //Gitee API返回release数组
+        final List<dynamic> releases = json.decode(response.body);
+        if (releases.isEmpty) {
+          debugPrint('没有找到任何发布版本');
+          return null;
+        }
+        releaseData = releases[0]; //第一个为最新版本
+      }
+
+      debugPrint('远程release数据: $releaseData');
+
       final latestVersionString = releaseData['tag_name'] as String? ?? '';
-      //去掉版本号前的'v'
+      debugPrint('远程版本tag: $latestVersionString');
+
+      if (latestVersionString.isEmpty) {
+        debugPrint('远程版本号为空');
+        return null;
+      }
+
       final latestVersionClean = latestVersionString.startsWith('v')
           ? latestVersionString.substring(1)
           : latestVersionString;
 
+      Version? latestVersion;
       try {
-        final latestVersion = Version.parse(latestVersionClean);
-
-        //检查是否有更新版本
-        if (latestVersion > currentVersion) {
-          return {
-            'hasUpdate': true,
-            'currentVersion': AppConstants.appVersion,
-            'latestVersion': latestVersionClean,
-            'releaseNotes': releaseData['body'] as String? ?? '没有提供更新说明',
-            'downloadUrl': _getDownloadUrlForPlatform(releaseData),
-            'releaseData': releaseData,
-          };
-        }
+        latestVersion = Version.parse(latestVersionClean);
       } catch (e) {
-        debugPrint('版本解析时出错: $e');
+        debugPrint('远程版本号解析错误: $e');
+        return null;
       }
-    } catch (e) {
-      debugPrint('检查更新时出错: $e');
-    }
 
-    return null;
+      final hasUpdate = latestVersion > currentVersion;
+      debugPrint('版本比较结果: $latestVersion > $currentVersion = $hasUpdate');
+
+      if (hasUpdate) {
+        final downloadUrl = _getDownloadUrlForPlatform(releaseData);
+        debugPrint('下载链接: $downloadUrl');
+        return {
+          'hasUpdate': true,
+          'currentVersion': currentVersionString,
+          'latestVersion': latestVersionClean,
+          'releaseNotes': releaseData['body'] as String? ?? '没有提供更新说明',
+          'downloadUrl': downloadUrl,
+          'releaseData': releaseData,
+        };
+      } else {
+        return {
+          'hasUpdate': false,
+          'currentVersion': currentVersionString,
+          'latestVersion': latestVersionClean,
+        };
+      }
+    } catch (e, stackTrace) {
+      debugPrint('检查更新时出错: $e');
+      debugPrint('堆栈跟踪: $stackTrace');
+      return null;
+    }
   }
+
 
   //根据架构获取下载URL
   static String? _getDownloadUrlForPlatform(Map<String, dynamic> releaseData) {

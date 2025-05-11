@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:http_proxy_override/http_proxy_override.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/theme_mode_provider.dart';
 import 'package:hackerkit_next/core/theme/app_theme.dart';
@@ -10,6 +13,21 @@ import 'package:hackerkit_next/features/home/presentation/viewmodels/home_viewmo
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConstants.initializeAppVersion();
+
+  //只在Android或iOS上获取代理
+  if (Platform.isAndroid || Platform.isIOS) {
+    try {
+      HttpProxyOverride httpProxyOverride = await HttpProxyOverride.createHttpProxy();
+      HttpOverrides.global = httpProxyOverride;
+      if (httpProxyOverride.host != null && httpProxyOverride.host!.isNotEmpty) {
+        debugPrint("成功获取本地代理: ${httpProxyOverride.host}:${httpProxyOverride.port}");
+        AppConstants.hasProxy = true;
+      }
+    } catch (e) {
+      debugPrint("获取系统代理出错: $e");
+    }
+  }
+
   runApp(
     MultiProvider(
       providers: [

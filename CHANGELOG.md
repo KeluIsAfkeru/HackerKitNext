@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.1.0...v1.1.1) (2025-05-11)
+
+
+### Bug Fixes
+
+* sync release to gitee ([a619f3b](https://github.com/KeluIsAfkeru/HackerKitNext/commit/a619f3b61b752765bbc4bede0c0a258a305d4eaa))
+
 ## [1.1.0](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.0.3...v1.1.0) (2025-05-11)
 
 

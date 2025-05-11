@@ -1,15 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:flutter_app_installer/flutter_app_installer.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:open_file_manager/open_file_manager.dart';
+import 'package:hackerkit_next/core/services/toast_service.dart';
+import 'package:flutter_app_installer/flutter_app_installer.dart';
 import 'package:hackerkit_next/core/constants/app_constants.dart';
+
 
 class UpdateService {
   //检查更新
@@ -46,9 +47,11 @@ class UpdateService {
         }
       } catch (e) {
         debugPrint('版本解析时出错: $e');
+        ToastService.showSuccessToast('版本解析时出错: $e');
       }
     } catch (e) {
       debugPrint('检查更新时出错: $e');
+      ToastService.showSuccessToast('检查更新时出错: $e');
     }
 
     return null;
@@ -156,13 +159,13 @@ class UpdateService {
         validateStatus: (_) => true,
       ));
 
-      dio.httpClientAdapter = IOHttpClientAdapter(
+      /*dio.httpClientAdapter = IOHttpClientAdapter(
         createHttpClient: () {
           final client = HttpClient();
           client.badCertificateCallback = (cert, host, port) => true;
           return client;
         },
-      );
+      );*/
 
       await dio.download(
         url,

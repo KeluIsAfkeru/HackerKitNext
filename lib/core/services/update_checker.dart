@@ -51,6 +51,7 @@ class UpdateChecker {
     if (isDialogShowing) return;
     try {
       final updateInfo = await UpdateService.checkForUpdates();
+      debugPrint("$updateInfo");
 
       if (context.mounted) {
         if (updateInfo != null && updateInfo['hasUpdate'] == true) {
@@ -62,7 +63,6 @@ class UpdateChecker {
             isDialogShowing = false;
           });
         } else {
-          ToastService.showSuccessToast('您当前使用的已经是最新版本');
           isDialogShowing = false;
         }
       }

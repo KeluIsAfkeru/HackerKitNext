@@ -1,14 +1,6 @@
 # Changelog
 
-## [1.0.3](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.0.2...v1.0.3) (2025-05-11)
-
-
-### Bug Fixes
-
-* 修复Mac构建问题和侧边栏折叠问题，现代化气泡框显示 ([25fa9d1](https://github.com/KeluIsAfkeru/HackerKitNext/commit/25fa9d1c3c1e05632ff54c1ae4e360c3cbde7106))
-
 ## [1.0.2](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.0.1...v1.0.2) (2025-05-10)
-
 
 ### Bug Fixes
 
@@ -16,19 +8,16 @@
 
 ## [1.0.1](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.0.0...v1.0.1) (2025-05-09)
 
-
 ### Bug Fixes
 
 * correct artifact packaging in release workflow ([652c0ac](https://github.com/KeluIsAfkeru/HackerKitNext/commit/652c0acdcd6c392de0d31091537e8b9183ee9ab4))
 
 ## 1.0.0 (2025-05-09)
 
-
 ### Features
 
 * 🎉 Initial commit - HackerKitNext Flutter project ([a3f5275](https://github.com/KeluIsAfkeru/HackerKitNext/commit/a3f527512851b7e53109782ac6ae966206405d71))
 * **workflow:** add multi-platform build and packaging ([ada0c3c](https://github.com/KeluIsAfkeru/HackerKitNext/commit/ada0c3cef23037bdc84bbd5e306417fd5ce441e3))
-
 
 ### Bug Fixes
 

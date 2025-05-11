@@ -108,26 +108,26 @@ jobs:
         with:
           files: build/linux/x64/release/bundle/HackerKit-v${{ env.VERSION }}-linux-release.tar.gz
 
-build-macos:
-  needs: extract-version
-  runs-on: macos-latest
-  env:
-    VERSION: ${{ needs.extract-version.outputs.version }}
-  steps:
-    - uses: actions/checkout@v4
-    - uses: subosito/flutter-action@v2
-      with:
-        channel: 'beta'
-        flutter-version: '3.32.0-0.3.pre'
-    - name: Install dependencies
-      run: flutter pub get
-    - name: Build MacOS Executable
-      run: flutter build macos --release
-    - name: Create MacOS ZIP Archive with version
-      run: |
-        cd build/macos/Build/Products/Release
-        zip -r HackerKit-v${VERSION}-macos-release.zip hackerkit_next.app
-    - name: Upload MacOS Build to Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: build/macos/Build/Products/Release/HackerKit-v${{ env.VERSION }}-macos-release.zip
+  build-macos:
+    needs: extract-version
+    runs-on: macos-latest
+    env:
+      VERSION: ${{ needs.extract-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'beta'
+          flutter-version: '3.32.0-0.3.pre'
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build MacOS Executable
+        run: flutter build macos --release
+      - name: Create MacOS ZIP Archive with version
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r HackerKit-v${VERSION}-macos-release.zip hackerkit_next.app
+      - name: Upload MacOS Build to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/macos/Build/Products/Release/HackerKit-v${{ env.VERSION }}-macos-release.zip

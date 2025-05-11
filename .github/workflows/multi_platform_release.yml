@@ -131,3 +131,38 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/macos/Build/Products/Release/HackerKit-v${{ env.VERSION }}-macos-release.zip
+
+  #Gitee同步任务
+  sync-to-gitee:
+    needs: [build-android, build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.extract-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Release Assets
+        uses: robinraju/release-downloader@v1.8
+        with:
+          tag: "v${{ env.VERSION }}"
+          fileName: "*.zip,*.apk,*.tar.gz"
+          out-file-path: "release-assets"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Sync Release to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+          GITEE_OWNER: "Afkeru"
+          GITEE_REPO: "hacker-kit-next_-release"
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python .github/scripts/sync_release_to_gitee.py

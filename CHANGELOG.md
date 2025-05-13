@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.1.3...v1.1.4) (2025-05-13)
+
+
+### Bug Fixes
+
+* 工作流依赖缓存 ([063f70f](https://github.com/KeluIsAfkeru/HackerKitNext/commit/063f70ffde84021c208e59be3cf8002601a5df0a))
+
 ## [1.1.3](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.1.2...v1.1.3) (2025-05-13)
 
 

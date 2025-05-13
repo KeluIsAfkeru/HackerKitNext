@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.1.2...v1.1.3) (2025-05-13)
+
+
+### Bug Fixes
+
+* 尝试修复更新安装时的签名冲突异常 ([8d9d84b](https://github.com/KeluIsAfkeru/HackerKitNext/commit/8d9d84b7c9658a6e1b88271a4a24d66c2f9fb924))
+
 ## [1.1.2](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.1.1...v1.1.2) (2025-05-13)
 
 

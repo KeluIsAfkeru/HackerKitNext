@@ -30,33 +30,69 @@ jobs:
           flutter-version: '3.32.0-0.3.pre'
       - name: Install dependencies
         run: flutter pub get
+      
       - name: Decode Keystore
         run: |
           if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
             echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/my-release-key.jks
+            echo "✅ 密钥库文件已创建: android/app/my-release-key.jks"
+            ls -la android/app/my-release-key.jks
+          else
+            echo "❌ 未提供密钥库数据，将使用调试签名"
           fi
+
       - name: Generate key.properties
         run: |
           if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            # 注意：这里的路径对应您已修改的build.gradle中的期望路径
             echo "storeFile=my-release-key.jks" > android/key.properties
             echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
             echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
             echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+            echo "✅ key.properties文件已创建，storeFile=my-release-key.jks"
+          else
+            echo "❌ 未提供密钥库数据，key.properties未创建"
           fi
+
+      - name: Verify files
+        run: |
+          echo "当前工作目录: $(pwd)"
+          echo "Android目录结构:"
+          ls -la android/
+          echo "app目录结构:"
+          ls -la android/app/
+          
+          if [ -f "android/key.properties" ]; then
+            echo "✅ key.properties文件存在:"
+            cat android/key.properties | grep -v "Password"
+          else
+            echo "❌ key.properties文件不存在"
+          fi
+          
+          if [ -f "android/app/my-release-key.jks" ]; then
+            echo "✅ 密钥库文件存在"
+            ls -la android/app/my-release-key.jks
+          else
+            echo "❌ 密钥库文件不存在"
+          fi
+
       - name: Build Split APKs
         run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64 --split-per-abi
+
       - name: Rename APKs with version
         run: |
-          mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/app/outputs/flutter-apk/HackerKit-v${VERSION}-armeabi-v7a-release.apk
-          mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/HackerKit-v${VERSION}-arm64-v8a-release.apk
-          mv build/app/outputs/flutter-apk/app-x86_64-release.apk build/app/outputs/flutter-apk/HackerKit-v${VERSION}-x86_64-release.apk
+          mkdir -p release-apks
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk release-apks/HackerKit-v${VERSION}-armeabi-v7a-release.apk
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk release-apks/HackerKit-v${VERSION}-arm64-v8a-release.apk
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk release-apks/HackerKit-v${VERSION}-x86_64-release.apk
+
       - name: Upload Split APKs to Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/app/outputs/flutter-apk/HackerKit-v${{ env.VERSION }}-armeabi-v7a-release.apk
-            build/app/outputs/flutter-apk/HackerKit-v${{ env.VERSION }}-arm64-v8a-release.apk
-            build/app/outputs/flutter-apk/HackerKit-v${{ env.VERSION }}-x86_64-release.apk
+            release-apks/HackerKit-v${{ env.VERSION }}-armeabi-v7a-release.apk
+            release-apks/HackerKit-v${{ env.VERSION }}-arm64-v8a-release.apk
+            release-apks/HackerKit-v${{ env.VERSION }}-x86_64-release.apk
 
   build-windows:
     needs: extract-version

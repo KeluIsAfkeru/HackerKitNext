@@ -24,13 +24,34 @@ jobs:
       VERSION: ${{ needs.extract-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache Android SDK
+        uses: actions/cache@v3
+        with:
+          path: $ANDROID_HOME
+          key: ${{ runner.os }}-android-sdk
+          restore-keys: |
+            ${{ runner.os }}-android-sdk
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'beta'
           flutter-version: '3.32.0-0.3.pre'
+          cache: true
+
       - name: Install dependencies
         run: flutter pub get
-      
+
       - name: Decode Keystore
         run: |
           if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
@@ -44,7 +65,6 @@ jobs:
       - name: Generate key.properties
         run: |
           if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
-            # 注意：这里的路径对应您已修改的build.gradle中的期望路径
             echo "storeFile=my-release-key.jks" > android/key.properties
             echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
             echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
@@ -101,18 +121,32 @@ jobs:
       VERSION: ${{ needs.extract-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache Windows build dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~\AppData\Local\Pub\Cache
+          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-cache-
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'beta'
           flutter-version: '3.32.0-0.3.pre'
+          cache: true
+
       - name: Install dependencies
         run: flutter pub get
+
       - name: Build Windows Executable
         run: flutter build windows --release
+
       - name: Create Windows ZIP Archive with version
         run: |
           cd build/windows/x64/runner/Release
           Compress-Archive -Path * -DestinationPath HackerKit-v${env:VERSION}-windows-release.zip
+
       - name: Upload Windows Build to Release
         uses: softprops/action-gh-release@v2
         with:
@@ -125,20 +159,42 @@ jobs:
       VERSION: ${{ needs.extract-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache Linux dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-cache-
+
+      - name: Cache apt packages
+        uses: actions/cache@v3
+        id: apt-cache
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-cache-${{ hashFiles('**/pubspec.yaml') }}
+
       - name: Install Linux build dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'beta'
           flutter-version: '3.32.0-0.3.pre'
+          cache: true
+
       - name: Install dependencies
         run: flutter pub get
+
       - name: Build Linux Executable
         run: flutter build linux --release
+
       - name: Create Linux tar.gz Archive with version
         run: |
           cd build/linux/x64/release/bundle
           tar -czvf HackerKit-v${VERSION}-linux-release.tar.gz *
+
       - name: Upload Linux Build to Release
         uses: softprops/action-gh-release@v2
         with:
@@ -151,18 +207,32 @@ jobs:
       VERSION: ${{ needs.extract-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache macOS dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'beta'
           flutter-version: '3.32.0-0.3.pre'
+          cache: true
+
       - name: Install dependencies
         run: flutter pub get
+
       - name: Build MacOS Executable
         run: flutter build macos --release
+
       - name: Create MacOS ZIP Archive with version
         run: |
           cd build/macos/Build/Products/Release
           zip -r HackerKit-v${VERSION}-macos-release.zip hackerkit_next.app
+
       - name: Upload MacOS Build to Release
         uses: softprops/action-gh-release@v2
         with:

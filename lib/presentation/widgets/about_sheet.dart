@@ -15,6 +15,7 @@ class AboutSheet extends StatelessWidget {
     final Uint8List afkeruPfpBytes = base64Decode(AppIcons.afkeruPfp);
     final Uint8List admilkPfpBytes = base64Decode(AppIcons.admilkPfp);
     final Uint8List mapleLeafPfpBytes = base64Decode(AppIcons.mapleLeafPfp);
+    final Uint8List dxPfpBytes = base64Decode(AppIcons.dxPfp);
 
     return Container(
       decoration: BoxDecoration(
@@ -142,6 +143,12 @@ class AboutSheet extends StatelessWidget {
                             avatar: mapleLeafPfpBytes,
                             name: "MapIeLeaf",
                             description: "在系统深喉与网络谜宫中游刃有余的现代嘿壳",
+                            theme: theme,
+                          ),
+                          SponsorCard(
+                            avatar: dxPfpBytes,
+                            name: "DXiang",
+                            description: "古希腊掌管单片机的神\n克鲁的好兄弟",
                             theme: theme,
                           ),
                         ],

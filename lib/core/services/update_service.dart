@@ -32,6 +32,8 @@ class UpdateService {
         headers: {'Content-Type': 'application/json;charset=UTF-8'},
       );
 
+      debugPrint('API: ${AppConstants.latestReleaseUrl}');
+
       debugPrint('API响应状态码: ${response.statusCode}');
 
       if (response.statusCode != 200) {

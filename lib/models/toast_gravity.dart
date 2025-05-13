@@ -1,0 +1,1 @@
+enum ToastGravity { top, bottom, center }

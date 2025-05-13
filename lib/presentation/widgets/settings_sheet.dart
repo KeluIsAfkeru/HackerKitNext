@@ -104,6 +104,8 @@ class _SettingsSheetState extends State<SettingsSheet> {
                       setState(() {
                         _isCheckingForUpdates = true;
                       });
+                      //添加微任务延迟，让UI有机会更新
+                      await Future.microtask(() => null);
 
                       try {
                         await UpdateChecker.checkForUpdatesManually(context);

@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hackerkit_next/core/services/toast_manager.dart';
 
 import '../../models/toast_config.dart';
+import '../../models/toast_gravity.dart';
 import '../../models/toast_type.dart';
 
 class ToastService {
-  static FToast? _fToast;
   static BuildContext? _context;
 
   static void initialize(BuildContext context) {
     _context = context;
-    _fToast = FToast();
-    _fToast!.init(context);
+    ToastManager.initialize(context);
   }
 
   static void showToast({
     required String message,
     ToastType type = ToastType.info,
     Duration duration = const Duration(seconds: 2),
-    ToastGravity gravity = ToastGravity.TOP,
+    ToastGravity gravity = ToastGravity.top,
   }) {
     if (_context == null) {
-      debugPrint('Warning: ToastService未初始化，无法显示提示');
+      debugPrint('Warning: ToastService未初始化');
       return;
     }
 
@@ -72,10 +71,10 @@ class ToastService {
       ),
     );
 
-    _fToast!.showToast(
-      child: toast,
+    ToastManager.showToast(
+      toastWidget: toast,
       gravity: gravity,
-      toastDuration: duration,
+      duration: duration,
     );
   }
 
@@ -95,7 +94,35 @@ class ToastService {
               ? theme.colorScheme.primaryContainer.withOpacity(0.3)
               : theme.colorScheme.primary.withOpacity(0.1),
         );
-      default:
+      case ToastType.error:
+        return ToastConfig(
+          backgroundColor: isDark
+              ? theme.colorScheme.surfaceContainerHighest
+              : theme.colorScheme.errorContainer.withOpacity(0.9),
+          textColor: isDark
+              ? theme.colorScheme.onSurface
+              : theme.colorScheme.onErrorContainer,
+          icon: Icons.error_outline,
+          iconColor: theme.colorScheme.error,
+          iconBgColor: isDark
+              ? theme.colorScheme.errorContainer.withOpacity(0.3)
+              : theme.colorScheme.error.withOpacity(0.1),
+        );
+      case ToastType.warning:
+        return ToastConfig(
+          backgroundColor: isDark
+              ? theme.colorScheme.surfaceContainerHighest
+              : theme.colorScheme.secondaryContainer.withOpacity(0.9),
+          textColor: isDark
+              ? theme.colorScheme.onSurface
+              : theme.colorScheme.onSecondaryContainer,
+          icon: Icons.warning_amber_outlined,
+          iconColor: theme.colorScheme.secondary,
+          iconBgColor: isDark
+              ? theme.colorScheme.secondaryContainer.withOpacity(0.3)
+              : theme.colorScheme.secondary.withOpacity(0.1),
+        );
+      default: // info
         return ToastConfig(
           backgroundColor: isDark
               ? theme.colorScheme.surfaceContainerHighest
@@ -127,5 +154,10 @@ class ToastService {
 
   static void showWarningToast(String message) {
     showToast(message: message, type: ToastType.warning);
+  }
+
+  //移除所有显示的Toast
+  static void removeAllToasts() {
+    ToastManager.removeAllToasts();
   }
 }

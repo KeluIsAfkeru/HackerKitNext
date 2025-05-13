@@ -94,12 +94,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 children: [
                   _buildAppBar(context, viewModel),
                   const Divider(height: 1, thickness: 1),
-                  Expanded(child: widget.child),
+                  Expanded(
+                    child: widget.child,
+                  ),
                 ],
               ),
             ),
 
-            //遮罩层始终渲染，但是呢透明度和点击响应由动画控制
             if (isMobile)
               AnimatedBuilder(
                 animation: _fadeAnimation,
@@ -110,7 +111,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       behavior: HitTestBehavior.translucent,
                       onTap: () => viewModel.toggleSidebar(),
                       child: Container(
-                        color: Colors.black.withValues(alpha: (_fadeAnimation.value * 0.5).toDouble()),
+                        color: Colors.black.withOpacity(_fadeAnimation.value * 0.5),
                       ),
                     ),
                   ),
@@ -173,41 +174,40 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
       ),
-      child: Row(
+      child: Stack(
         children: [
-          IconButton(
-            onPressed: () => viewModel.toggleSidebar(),
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                viewModel.isSidebarExpanded
-                    ? Icons.menu_open_rounded
-                    : Icons.menu_rounded,
-                key: ValueKey(viewModel.isSidebarExpanded),
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            tooltip: viewModel.isSidebarExpanded ? '收起菜单' : '展开菜单',
-          ),
-          const SizedBox(width: 16),
-          Row(
-            children: [
-              Icon(
-                Icons.security_rounded,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                AppConstants.appName,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              onPressed: () => viewModel.toggleSidebar(),
+              icon: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  viewModel.isSidebarExpanded
+                      ? Icons.menu_open_rounded
+                      : Icons.menu_rounded,
+                  key: ValueKey(viewModel.isSidebarExpanded),
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
-            ],
+              tooltip: viewModel.isSidebarExpanded ? '收起菜单' : '展开菜单',
+            ),
           ),
-          const Spacer(),
-          const MoreMenuButton(),
+
+          Center(
+            child: Text(
+              AppConstants.appName,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+
+          Align(
+            alignment: Alignment.centerRight,
+            child: MoreMenuButton(),
+          ),
         ],
       ),
     );

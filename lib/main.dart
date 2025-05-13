@@ -20,7 +20,7 @@ void main() async {
       HttpProxyOverride httpProxyOverride = await HttpProxyOverride.createHttpProxy();
       HttpOverrides.global = httpProxyOverride;
       if (httpProxyOverride.host != null && httpProxyOverride.host!.isNotEmpty) {
-        debugPrint("成功获取本地代理: ${httpProxyOverride.host}:${httpProxyOverride.port}");
+        debugPrint("\n成功获取本地代理: ${httpProxyOverride.host}:${httpProxyOverride.port}");
         AppConstants.hasProxy = true;
       }
     } catch (e) {

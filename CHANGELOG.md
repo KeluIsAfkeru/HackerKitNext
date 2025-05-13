@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.1.1...v1.1.2) (2025-05-13)
+
+
+### Bug Fixes
+
+* 修复气泡提示框多实例显示问题并添加字符串编码功能,以及其他bug的修复 ([2a48cf6](https://github.com/KeluIsAfkeru/HackerKitNext/commit/2a48cf60d66c89d3d00fa4639e67113fbc210818))
+
 ## [1.1.1](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.1.0...v1.1.1) (2025-05-11)
 
 

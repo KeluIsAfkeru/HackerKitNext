@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.1.4...v1.2.0) (2025-05-16)
+
+
+### Features
+
+* 实现JWT工具、文本编码、进制转换、原码/反码/补码计算、页面预加载，设置页支持多更新源选择 ([51d5ba7](https://github.com/KeluIsAfkeru/HackerKitNext/commit/51d5ba753285e0e977da674cb40b7d66de29fc4b))
+
 ## [1.1.4](https://github.com/KeluIsAfkeru/HackerKitNext/compare/v1.1.3...v1.1.4) (2025-05-13)
 
 

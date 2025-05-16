@@ -4,8 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:hackerkit_next/features/home/presentation/viewmodels/home_viewmodel.dart';
 import 'package:hackerkit_next/presentation/widgets/modern_sidebar.dart';
 import 'package:hackerkit_next/presentation/widgets/more_menu_button.dart';
+import '../../../../config/router/app_router.dart';
 import '../../../../core/constants/app_icons.dart';
 import '../../../../core/services/update_checker.dart';
+import '../../../../core/update/update_source_manager.dart';
+import '../../../../utils/proxy_detector.dart';
 
 class HomePage extends StatefulWidget {
   final Widget child;
@@ -52,14 +55,23 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   @override
-  void didChangeDependencies() {
+  void didChangeDependencies() async {
     super.didChangeDependencies();
     final viewModel = Provider.of<HomeViewModel>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _syncSidebarAnim(viewModel.isSidebarExpanded);
 
       if (mounted) {
-        UpdateChecker.initialize(context);
+        final sourceManager = Provider.of<UpdateSourceManager>(context, listen: false);
+
+        //检查系统代理状态
+        final hasProxy = await ProxyDetector.hasSystemProxy();
+        sourceManager.hasProxy = hasProxy;
+
+        //加载保存的更新源设置
+        await sourceManager.loadSavedSelection();
+        UpdateChecker.initialize(context, sourceManager);
       }
     });
   }

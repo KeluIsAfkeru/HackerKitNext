@@ -1,30 +1,30 @@
-// core/services/update_checker.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../presentation/widgets/update_dialog.dart';
 import '../services/toast_service.dart';
+import '../update/update_source_manager.dart';
 import 'update_service.dart';
 
 class UpdateChecker {
   static bool isDialogShowing = false;
   static bool hasShownDialogThisSession = false;
 
-  static Future<void> initialize(BuildContext context) async {
+  static Future<void> initialize(BuildContext context, UpdateSourceManager sourceManager) async {
     ToastService.initialize(context);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Timer.run(() async {
-        await _checkForUpdates(context);
+        await _checkForUpdates(context, sourceManager);
       });
     });
   }
 
-  static Future<void> _checkForUpdates(BuildContext context) async {
+  static Future<void> _checkForUpdates(BuildContext context, UpdateSourceManager sourceManager) async {
     if (isDialogShowing || hasShownDialogThisSession) return;
 
     try {
       isDialogShowing = true;
-      final updateInfo = await UpdateService.checkForUpdates();
+      final updateInfo = await UpdateService.checkForUpdates(sourceManager);
 
       if (updateInfo != null && updateInfo['hasUpdate'] == true) {
         if (context.mounted) {
@@ -47,14 +47,14 @@ class UpdateChecker {
     }
   }
 
-  static Future<void> checkForUpdatesManually(BuildContext context) async {
+  static Future<void> checkForUpdatesManually(BuildContext context, UpdateSourceManager sourceManager) async {
     if (isDialogShowing) return;
     isDialogShowing = true;
 
     try {
       ToastService.showInfoToast('正在检查更新...');
 
-      final updateInfo = await UpdateService.checkForUpdates();
+      final updateInfo = await UpdateService.checkForUpdates(sourceManager);
       debugPrint('更新检查结果: $updateInfo');
 
       if (context.mounted) {

@@ -35,7 +35,7 @@ class EnhancedDropdown<T> extends StatelessWidget {
             child: Text(
               itemLabelBuilder(item),
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 color: colorScheme.onSurface,
               ),
             ),

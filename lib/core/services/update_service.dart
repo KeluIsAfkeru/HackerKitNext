@@ -1,19 +1,19 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:flutter_app_installer/flutter_app_installer.dart';
 import 'package:open_file_manager/open_file_manager.dart';
-import 'package:hackerkit_next/core/constants/app_constants.dart';
+
+import '../constants/app_constants.dart';
+import '../update/update_source_manager.dart';
 
 class UpdateService {
   //检查更新
-  static Future<Map<String, dynamic>?> checkForUpdates() async {
+  static Future<Map<String, dynamic>?> checkForUpdates(UpdateSourceManager sourceManager) async {
     try {
       final currentVersionString = AppConstants.appVersion;
       debugPrint('应用当前版本: $currentVersionString');
@@ -26,13 +26,16 @@ class UpdateService {
         return null;
       }
 
-      //根据hasProxy使用不同的API端点
+      final source = sourceManager.currentSource;
+      final url = source.getLatestReleaseUrl();
+
+      debugPrint('使用更新源: ${source.name}');
+      debugPrint('API请求: $url');
+
       final response = await http.get(
-        Uri.parse(AppConstants.latestReleaseUrl),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json;charset=UTF-8'},
       );
-
-      debugPrint('API: ${AppConstants.latestReleaseUrl}');
 
       debugPrint('API响应状态码: ${response.statusCode}');
 
@@ -41,19 +44,11 @@ class UpdateService {
         return null;
       }
 
-      //根据不同API解析响应数据
-      dynamic releaseData;
-      if (AppConstants.hasProxy) {
-        //GitHub API返回单个release对象
-        releaseData = json.decode(response.body);
-      } else {
-        //Gitee API返回release数组
-        final List<dynamic> releases = json.decode(response.body);
-        if (releases.isEmpty) {
-          debugPrint('没有找到任何发布版本');
-          return null;
-        }
-        releaseData = releases[0]; //第一个为最新版本
+      //使用源特定的解析方法
+      final releaseData = source.parseReleaseData(response.body);
+      if (releaseData == null) {
+        debugPrint('解析响应数据失败');
+        return null;
       }
 
       debugPrint('远程release数据: $releaseData');
@@ -106,7 +101,6 @@ class UpdateService {
     }
   }
 
-
   //根据架构获取下载URL
   static String? _getDownloadUrlForPlatform(Map<String, dynamic> releaseData) {
     final assets = releaseData['assets'] as List<dynamic>? ?? [];
@@ -114,7 +108,6 @@ class UpdateService {
     String? assetPattern;
 
     if (Platform.isAndroid) {
-      //根据CPU架构选择正确的APK
       String cpuArchitecture = _getCpuArchitecture();
       assetPattern = cpuArchitecture;
     } else if (Platform.isWindows) {
@@ -155,32 +148,6 @@ class UpdateService {
 
     //默认返回arm64
     return 'arm64-v8a';
-  }
-
-  //获取下载目录路径
-  static Future<String?> _getDownloadDirectoryPath() async {
-    try {
-      if (Platform.isAndroid) {
-        final directory = await getExternalStorageDirectory();
-        if (directory != null) {
-          //尝试获取标准下载目录
-          final downloadDir = Directory('${directory.path}/../Download');
-          if (await downloadDir.exists()) {
-            return downloadDir.path;
-          }
-          return directory.path;
-        }
-      } else {
-        //其他平台尝试获取下载目录
-        final directory = await getDownloadsDirectory();
-        if (directory != null) {
-          return directory.path;
-        }
-      }
-    } catch (e) {
-      debugPrint('获取下载目录出错: $e');
-    }
-    return null;
   }
 
   //下载并安装更新
@@ -257,6 +224,32 @@ class UpdateService {
     } catch (e) {
       onError('下载或安装更新时出错: $e');
     }
+  }
+
+  //获取下载目录路径
+  static Future<String?> _getDownloadDirectoryPath() async {
+    try {
+      if (Platform.isAndroid) {
+        final directory = await getExternalStorageDirectory();
+        if (directory != null) {
+          //尝试获取标准下载目录
+          final downloadDir = Directory('${directory.path}/../Download');
+          if (await downloadDir.exists()) {
+            return downloadDir.path;
+          }
+          return directory.path;
+        }
+      } else {
+        //其他平台尝试获取下载目录
+        final directory = await getDownloadsDirectory();
+        if (directory != null) {
+          return directory.path;
+        }
+      }
+    } catch (e) {
+      debugPrint('获取下载目录出错: $e');
+    }
+    return null;
   }
 
   //打开文件管理器/目录

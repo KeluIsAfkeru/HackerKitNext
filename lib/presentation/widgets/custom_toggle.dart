@@ -1,26 +1,48 @@
 import 'package:flutter/material.dart';
 
-//自定义的切换按钮
+// 自定义的切换按钮，支持多个选项
 class CustomToggle extends StatelessWidget {
+  // 新增支持多选项的参数
+  final List<String>? options;
+  final int? selectedIndex;
+  final Function(int)? onOptionSelected;
+
+  // 保留原有参数以兼容旧代码
   final bool isFirstOptionSelected;
   final String firstOptionLabel;
   final String secondOptionLabel;
   final VoidCallback onFirstOptionSelected;
   final VoidCallback onSecondOptionSelected;
 
-  const CustomToggle({
+  // 构造函数同时支持两种模式
+  CustomToggle({
     super.key,
-    required this.isFirstOptionSelected,
-    required this.firstOptionLabel,
-    required this.secondOptionLabel,
-    required this.onFirstOptionSelected,
-    required this.onSecondOptionSelected,
-  });
+    this.options,
+    this.selectedIndex,
+    this.onOptionSelected,
+    this.isFirstOptionSelected = true,
+    this.firstOptionLabel = '',
+    this.secondOptionLabel = '',
+    this.onFirstOptionSelected = _emptyCallback,
+    this.onSecondOptionSelected = _emptyCallback,
+  }) : assert((options != null && selectedIndex != null && onOptionSelected != null) ||
+      (firstOptionLabel.isNotEmpty && secondOptionLabel.isNotEmpty));
+
+  static void _emptyCallback() {}
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // 使用新API或兼容旧API
+    final bool useNewApi = options != null && selectedIndex != null && onOptionSelected != null;
+    final List<String> displayOptions = useNewApi
+        ? options!
+        : [firstOptionLabel, secondOptionLabel];
+    final int currentIndex = useNewApi
+        ? selectedIndex!
+        : (isFirstOptionSelected ? 0 : 1);
 
     return Container(
       height: 40,
@@ -30,13 +52,16 @@ class CustomToggle extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final optionWidth = constraints.maxWidth / displayOptions.length;
+
           return Stack(
             children: [
+              // 动画选择器背景
               AnimatedPositioned(
-                duration: Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                left: isFirstOptionSelected ? 0 : constraints.maxWidth / 2,
-                width: constraints.maxWidth / 2,
+                left: currentIndex * optionWidth,
+                width: optionWidth,
                 top: 0,
                 bottom: 0,
                 child: Container(
@@ -46,23 +71,24 @@ class CustomToggle extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // 选项行
               Row(
-                children: [
-                  _buildToggleButton(
+                children: List.generate(displayOptions.length, (index) {
+                  return _buildToggleButton(
                     context: context,
-                    label: firstOptionLabel,
-                    isSelected: isFirstOptionSelected,
-                    onTap: onFirstOptionSelected,
+                    label: displayOptions[index],
+                    isSelected: currentIndex == index,
+                    onTap: () {
+                      if (useNewApi) {
+                        onOptionSelected!(index);
+                      } else {
+                        index == 0 ? onFirstOptionSelected() : onSecondOptionSelected();
+                      }
+                    },
                     colorScheme: colorScheme,
-                  ),
-                  _buildToggleButton(
-                    context: context,
-                    label: secondOptionLabel,
-                    isSelected: !isFirstOptionSelected,
-                    onTap: onSecondOptionSelected,
-                    colorScheme: colorScheme,
-                  ),
-                ],
+                  );
+                }),
               ),
             ],
           );
@@ -90,7 +116,7 @@ class CustomToggle extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Center(
               child: AnimatedDefaultTextStyle(
-                duration: Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 300),
                 style: TextStyle(
                   color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

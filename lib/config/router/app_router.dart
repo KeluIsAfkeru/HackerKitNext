@@ -7,6 +7,9 @@ class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
   static final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
+  //页面缓存
+  static final Map<String, Widget> _cachedPages = {};
+
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     navigatorKey: _rootNavigatorKey,
@@ -21,7 +24,7 @@ class AppRouter {
             path: '/',
             pageBuilder: (context, state) => _buildTransitionPage(
               key: state.pageKey,
-              child: const PageContainer(currentPath: '/'),
+              child: _getCachedPage('/', () => const PageContainer(currentPath: '/')),
             ),
           ),
           GoRoute(
@@ -32,7 +35,7 @@ class AppRouter {
 
               return _buildTransitionPage(
                 key: state.pageKey,
-                child: PageContainer(currentPath: path),
+                child: _getCachedPage(path, () => PageContainer(currentPath: path)),
               );
             },
           ),
@@ -40,7 +43,7 @@ class AppRouter {
             path: '/coming-soon',
             pageBuilder: (context, state) => _buildTransitionPage(
               key: state.pageKey,
-              child: const PageContainer(currentPath: '/coming-soon'),
+              child: _getCachedPage('/coming-soon', () => const PageContainer(currentPath: '/coming-soon')),
             ),
           ),
         ],
@@ -48,6 +51,31 @@ class AppRouter {
     ],
   );
 
+  //获取缓存页面或创建新页面
+  static Widget _getCachedPage(String path, Widget Function() builder) {
+    if (!_cachedPages.containsKey(path)) {
+      _cachedPages[path] = builder();
+    }
+    return _cachedPages[path]!;
+  }
+
+  //预加载所有路由页面
+  static void preloadPages() {
+    _getCachedPage('/', () => const PageContainer(currentPath: '/'));
+    _getCachedPage('/coming-soon', () => const PageContainer(currentPath: '/coming-soon'));
+
+    //预加载模块页面
+    final moduleTypes = [
+      'TextEncodingConverter',
+      'BaseConverter',
+      'BinaryCodeCalculator',
+      'JWTTool'
+    ];
+
+    for (final type in moduleTypes) {
+      _getCachedPage('/module/$type', () => PageContainer(currentPath: '/module/$type'));
+    }
+  }
 
   //动画转场
   static CustomTransitionPage _buildTransitionPage({required LocalKey key, required Widget child}) {

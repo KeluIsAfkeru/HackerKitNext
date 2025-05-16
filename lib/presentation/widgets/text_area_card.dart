@@ -9,6 +9,7 @@ class TextAreaCard extends StatelessWidget {
   final bool readOnly;
   final List<ActionButton> actions;
   final Widget? leadingWidget;
+  final ValueChanged<String>? onChanged;
 
   const TextAreaCard({
     super.key,
@@ -18,6 +19,7 @@ class TextAreaCard extends StatelessWidget {
     this.readOnly = false,
     required this.actions,
     this.leadingWidget,
+    this.onChanged,
   });
 
   @override
@@ -34,7 +36,7 @@ class TextAreaCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
             child: Row(
               children: [
                 if (leadingWidget != null)
@@ -77,10 +79,14 @@ class TextAreaCard extends StatelessWidget {
               maxHeight: 200,
             ),
             child: TextField(
+              onTapOutside: (event) {
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
               controller: controller,
               maxLines: null,
               minLines: 5,
               readOnly: readOnly,
+              onChanged: onChanged, // 连接到 TextField 的 onChanged
               style: TextStyle(
                 color: colorScheme.onSurface,
                 height: 1.5,

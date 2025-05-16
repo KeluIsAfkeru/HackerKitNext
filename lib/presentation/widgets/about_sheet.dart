@@ -38,140 +38,125 @@ class AboutSheet extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    //头像
-                    Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [
-                            theme.colorScheme.primary,
-                            theme.colorScheme.tertiary,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+            SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  //头像
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.tertiary,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 44,
+                      backgroundColor: theme.colorScheme.surface,
                       child: CircleAvatar(
                         radius: 44,
-                        backgroundColor: theme.colorScheme.surface,
-                        child: CircleAvatar(
-                          radius: 44,
-                          backgroundColor: theme.colorScheme.primaryContainer,
-                          child: ClipOval(
-                            child: Image.memory(
-                              afkeruPfpBytes,
-                              width: 88,
-                              height: 88,
-                              fit: BoxFit.cover,
-                            ),
+                        backgroundColor: theme.colorScheme.primaryContainer,
+                        child: ClipOval(
+                          child: Image.memory(
+                            afkeruPfpBytes,
+                            width: 88,
+                            height: 88,
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                    Text(
-                      AppConstants.appAuthor,
-                      style: theme.textTheme.headlineSmall?.copyWith(
+                  Text(
+                    AppConstants.appAuthor,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    '${AppConstants.appName} ${AppConstants.appVersion}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest.withOpacity(isDark ? 0.3 : 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: theme.colorScheme.outlineVariant.withOpacity(isDark ? 0.1 : 0.05),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      AppConstants.appDescription,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  //友情赞助
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "技术支持",
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.onSurface,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 12),
 
-                    const SizedBox(height: 8),
-
-                    Text(
-                      '${AppConstants.appName} ${AppConstants.appVersion}',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(isDark ? 0.3 : 0.15),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: theme.colorScheme.outlineVariant.withOpacity(isDark ? 0.1 : 0.05),
-                          width: 1,
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        SponsorCard(
+                          avatar: admilkPfpBytes,
+                          name: "admilk",
+                          description: "Node.js/Java/Python炼金术士\nBot大神",
+                          theme: theme,
                         ),
-                      ),
-                      child: Text(
-                        AppConstants.appDescription,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                        SponsorCard(
+                          avatar: mapleLeafPfpBytes,
+                          name: "MapIeLeaf",
+                          description: "在系统深喉与网络谜宫中游刃有余的现代嘿壳",
+                          theme: theme,
                         ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    //友情赞助区域
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "技术支持",
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
+                        SponsorCard(
+                          avatar: dxPfpBytes,
+                          name: "DXiang",
+                          description: "古希腊掌管单片机的神\n克鲁的好兄弟",
+                          theme: theme,
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          SponsorCard(
-                            avatar: admilkPfpBytes,
-                            name: "admilk",
-                            description: "Node.js/Java/Python炼金术士\nBot大神",
-                            theme: theme,
-                          ),
-                          SponsorCard(
-                            avatar: mapleLeafPfpBytes,
-                            name: "MapIeLeaf",
-                            description: "在系统深喉与网络谜宫中游刃有余的现代嘿壳",
-                            theme: theme,
-                          ),
-                          SponsorCard(
-                            avatar: dxPfpBytes,
-                            name: "DXiang",
-                            description: "古希腊掌管单片机的神\n克鲁的好兄弟",
-                            theme: theme,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-
-            FilledButton(
-              onPressed: () => Navigator.pop(context),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: const Text('关闭'),
-            ),
-            SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 8),
           ],
         ),
       ),

@@ -14,8 +14,64 @@ jobs:
       - uses: actions/checkout@v4
       - id: get_version
         run: |
-          VERSION=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1)
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f2 | cut -d '+' -f1)" >> $GITHUB_OUTPUT
+
+  build:
+    needs: extract-version
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ needs.extract-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ matrix.os == 'windows-latest' && '~\AppData\Local\Pub\Cache' || (matrix.os == 'macos-latest' && '~/Library/Caches/CocoaPods' || '~/.pub-cache') }}
+          key: ${{ runner.os }}-cache-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: Install build dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'beta'
+          flutter-version: '3.32.0-0.3.pre'
+          cache: true
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Platform-specific build
+        run: |
+          case "${{ matrix.os }}" in
+            ubuntu-latest)
+              flutter build linux --release
+              cd build/linux/x64/release/bundle
+              tar -czvf HackerKit-v${VERSION}-linux-release.tar.gz *
+              ;;
+            windows-latest)
+              flutter build windows --release
+              cd build/windows/x64/runner/Release
+              Compress-Archive -Path * -DestinationPath HackerKit-v${env:VERSION}-windows-release.zip
+              ;;
+            macos-latest)
+              flutter build macos --release
+              cd build/macos/Build/Products/Release
+              zip -r HackerKit-v${VERSION}-macos-release.zip hackerkit_next.app
+              ;;
+          esac
+
+      - name: Upload build artifact
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/**/HackerKit-v${{ env.VERSION }}-*-release.*
 
   build-android:
     needs: extract-version
@@ -25,23 +81,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache Gradle dependencies
+      - name: Cache Android dependencies
         uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Cache Android SDK
-        uses: actions/cache@v3
-        with:
-          path: $ANDROID_HOME
-          key: ${{ runner.os }}-android-sdk
-          restore-keys: |
-            ${{ runner.os }}-android-sdk
 
       - uses: subosito/flutter-action@v2
         with:
@@ -49,51 +95,19 @@ jobs:
           flutter-version: '3.32.0-0.3.pre'
           cache: true
 
-      - name: Install dependencies
+      - name: Install Flutter dependencies
         run: flutter pub get
 
-      - name: Decode Keystore
+      - name: Decode and prepare keystore
         run: |
           if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
             echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/my-release-key.jks
-            echo "✅ 密钥库文件已创建: android/app/my-release-key.jks"
-            ls -la android/app/my-release-key.jks
-          else
-            echo "❌ 未提供密钥库数据，将使用调试签名"
-          fi
-
-      - name: Generate key.properties
-        run: |
-          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
-            echo "storeFile=my-release-key.jks" > android/key.properties
-            echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
-            echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
-            echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
-            echo "✅ key.properties文件已创建，storeFile=my-release-key.jks"
-          else
-            echo "❌ 未提供密钥库数据，key.properties未创建"
-          fi
-
-      - name: Verify files
-        run: |
-          echo "当前工作目录: $(pwd)"
-          echo "Android目录结构:"
-          ls -la android/
-          echo "app目录结构:"
-          ls -la android/app/
-          
-          if [ -f "android/key.properties" ]; then
-            echo "✅ key.properties文件存在:"
-            cat android/key.properties | grep -v "Password"
-          else
-            echo "❌ key.properties文件不存在"
-          fi
-          
-          if [ -f "android/app/my-release-key.jks" ]; then
-            echo "✅ 密钥库文件存在"
-            ls -la android/app/my-release-key.jks
-          else
-            echo "❌ 密钥库文件不存在"
+            cat <<EOF > android/key.properties
+            storeFile=my-release-key.jks
+            storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+            keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+            keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+            EOF
           fi
 
       - name: Build Split APKs
@@ -106,134 +120,10 @@ jobs:
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk release-apks/HackerKit-v${VERSION}-arm64-v8a-release.apk
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk release-apks/HackerKit-v${VERSION}-x86_64-release.apk
 
-      - name: Upload Split APKs to Release
+      - name: Upload APKs to Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             release-apks/HackerKit-v${{ env.VERSION }}-armeabi-v7a-release.apk
             release-apks/HackerKit-v${{ env.VERSION }}-arm64-v8a-release.apk
             release-apks/HackerKit-v${{ env.VERSION }}-x86_64-release.apk
-
-  build-windows:
-    needs: extract-version
-    runs-on: windows-latest
-    env:
-      VERSION: ${{ needs.extract-version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache Windows build dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~\AppData\Local\Pub\Cache
-          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-cache-
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'beta'
-          flutter-version: '3.32.0-0.3.pre'
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build Windows Executable
-        run: flutter build windows --release
-
-      - name: Create Windows ZIP Archive with version
-        run: |
-          cd build/windows/x64/runner/Release
-          Compress-Archive -Path * -DestinationPath HackerKit-v${env:VERSION}-windows-release.zip
-
-      - name: Upload Windows Build to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: build/windows/x64/runner/Release/HackerKit-v${{ env.VERSION }}-windows-release.zip
-
-  build-linux:
-    needs: extract-version
-    runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ needs.extract-version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache Linux dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-cache-
-
-      - name: Cache apt packages
-        uses: actions/cache@v3
-        id: apt-cache
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-cache-${{ hashFiles('**/pubspec.yaml') }}
-
-      - name: Install Linux build dependencies
-        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'beta'
-          flutter-version: '3.32.0-0.3.pre'
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build Linux Executable
-        run: flutter build linux --release
-
-      - name: Create Linux tar.gz Archive with version
-        run: |
-          cd build/linux/x64/release/bundle
-          tar -czvf HackerKit-v${VERSION}-linux-release.tar.gz *
-
-      - name: Upload Linux Build to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: build/linux/x64/release/bundle/HackerKit-v${{ env.VERSION }}-linux-release.tar.gz
-
-  build-macos:
-    needs: extract-version
-    runs-on: macos-latest
-    env:
-      VERSION: ${{ needs.extract-version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache macOS dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/Library/Caches/CocoaPods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'beta'
-          flutter-version: '3.32.0-0.3.pre'
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build MacOS Executable
-        run: flutter build macos --release
-
-      - name: Create MacOS ZIP Archive with version
-        run: |
-          cd build/macos/Build/Products/Release
-          zip -r HackerKit-v${VERSION}-macos-release.zip hackerkit_next.app
-
-      - name: Upload MacOS Build to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: build/macos/Build/Products/Release/HackerKit-v${{ env.VERSION }}-macos-release.zip

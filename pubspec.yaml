@@ -30,6 +30,11 @@ dependencies:
   http_proxy_override: ^1.0.1
   dropdown_button2: ^2.3.9
   punycode_converter: ^0.2.1
+  basic_utils: ^5.8.2
+  crypto: ^3.0.6
+  pointycastle: ^4.0.0
+  dart_jsonwebtoken: ^3.2.0
+  asn1lib: ^1.6.4
 
   flutter_app_installer:
     path: ./plugins/flutter_app_installer

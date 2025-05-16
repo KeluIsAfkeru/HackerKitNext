@@ -3,7 +3,7 @@ description: "HackerKitNext is the Flutter implementation of the modern and powe
 
 publish_to: 'none'
 
-version: 1.1.4+9
+version: 1.2.0+10
 
 environment:
   sdk: ^3.8.0-278.2.beta
